@@ -77,13 +77,8 @@ export async function registerParticipant(db: Db, params: RegisterParams): Promi
 
     const others = await tx.select().from(participants).where(eq(participants.eventId, event.id));
 
-    const [lastP] = await tx
-      .select({ at: participants.createdAt })
-      .from(participants)
-      .where(eq(participants.eventId, event.id))
-      .orderBy(desc(participants.createdAt))
-      .limit(1);
-    const participantAt = new Date(Math.max(Date.now(), (lastP?.at.getTime() ?? 0) + 1));
+    const lastParticipantAt = others.reduce((max, o) => Math.max(max, o.createdAt.getTime()), 0);
+    const participantAt = new Date(Math.max(Date.now(), lastParticipantAt + 1));
 
     const [inserted] = await tx
       .insert(participants)
