@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Skills and their assets are not application code.
+    ".agents/**",
+    ".taste-skill/**",
   ]),
 ]);
 

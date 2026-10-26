@@ -1,26 +1,1173 @@
 @import "tailwindcss";
+@import "@heroui/styles";
 
+/* ---------------------------------------------------------------------------
+   Tokens. docs/design.md › Tokens. Light scheme swaps paper and ink.
+   --------------------------------------------------------------------------- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: dark light;
+
+  --bg: #07070c;
+  --field: #07070c;
+  --sheet: #1c1c1e;
+  --raised: #2c2c2e;
+  --paper: #f5f5f7;
+  --ink: #1c1c1e;
+  --mist: #c7c7cc;
+  --faint: #98989d;
+  --thread: #e4d7bc;
+  --live: #6f9a78;
+  --danger: #ff6961;
+
+  /* Declared but solid or transparent on purpose. No surface uses blur. */
+  --glass: #101012;
+  --glass-strong: #161618;
+  --line: transparent;
+  --glass-stroke: transparent;
+  --glass-highlight: transparent;
+  --vignette: transparent;
+  --dot: rgba(255, 255, 255, 0.35);
+  --shadow-float: none;
+
+  --font-stack: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+  --ease-sheet: cubic-bezier(0.23, 1, 0.32, 1);
+
+  /* HeroUI v3 semantic variables, pointed at the tokens above. */
+  --background: var(--bg);
+  --foreground: var(--paper);
+  --surface: var(--sheet);
+  --surface-foreground: var(--paper);
+  --surface-secondary: var(--raised);
+  --surface-secondary-foreground: var(--paper);
+  --surface-tertiary: var(--raised);
+  --surface-tertiary-foreground: var(--paper);
+  --overlay: var(--sheet);
+  --overlay-foreground: var(--paper);
+  --muted: var(--faint);
+  --default: var(--raised);
+  --default-foreground: var(--paper);
+  --field-background: var(--raised);
+  --field-foreground: var(--paper);
+  --field-placeholder: var(--faint);
+  --accent: var(--paper);
+  --accent-foreground: var(--ink);
+  --accent-hover: var(--paper);
+  --accent-soft-foreground: var(--paper);
+  --danger-foreground: var(--ink);
+  --border: transparent;
+  --separator: color-mix(in srgb, var(--paper) 8%, transparent);
+  --focus: var(--paper);
+  --link: var(--paper);
+  --backdrop: rgba(0, 0, 0, 0.46);
+  --surface-shadow: none;
+  --overlay-shadow: none;
+  --field-shadow: none;
+  --field-border: transparent;
+  --field-border-width: 0px;
+  --border-width: 0px;
+  --ring-offset-width: 3px;
+  --radius: 0.75rem;
+  --disabled-opacity: 0.55;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: light) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --bg: #e4e4ea;
+    --field: #e4e4ea;
+    --sheet: #f7f7f8;
+    --raised: #e1e1e6;
+    --paper: #1c1c1e;
+    --ink: #f5f5f7;
+    --mist: #3a3a3c;
+    --faint: #5c5c61;
+    --thread: #6d5a32;
+    --live: #2f6b42;
+    --danger: #c41a16;
+    --glass: #f4f4f6;
+    --glass-strong: #ffffff;
+    --dot: rgba(0, 0, 0, 0.22);
   }
 }
 
+/* ---------------------------------------------------------------------------
+   Base
+   --------------------------------------------------------------------------- */
+html,
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  height: 100%;
+  margin: 0;
+  background: var(--bg);
+  color: var(--paper);
+  font-family: var(--font-stack);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+::selection {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+:focus-visible,
+[data-focus-visible="true"] {
+  outline: 2px solid var(--paper) !important;
+  outline-offset: 3px !important;
+  /* HeroUI draws its focus ring with Tailwind ring shadows. Ours is the outline above. */
+  --tw-ring-shadow: 0 0 #0000 !important;
+  --tw-ring-offset-shadow: 0 0 #0000 !important;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* HeroUI: no shadows, no press scale, no blur. */
+.button,
+.toggle-button,
+.close-button,
+.select__trigger,
+.modal__trigger {
+  &:active,
+  &[data-pressed="true"] {
+    transform: none !important;
+  }
+}
+
+/* The dialog container zooms in by default. A sheet only needs to appear. */
+.modal__container[data-entering="true"],
+.modal__container[data-exiting="true"] {
+  animation: none !important;
+}
+
+/* ---------------------------------------------------------------------------
+   Shell
+   --------------------------------------------------------------------------- */
+.app {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: var(--bg);
+  isolation: isolate;
+}
+
+.graph-field {
+  position: absolute;
+  inset: 0;
+  background: var(--field);
+  z-index: 0;
+}
+
+.graph-field canvas {
+  display: block;
+  touch-action: none;
+}
+
+.aurora {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: 220px;
+  height: 220px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0) 70%);
+  pointer-events: none;
+}
+
+@media (prefers-color-scheme: light) {
+  .aurora {
+    background: radial-gradient(circle, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0) 70%);
+  }
+}
+
+.is-live .aurora {
+  display: none;
+}
+
+.empty-line {
+  position: absolute;
+  left: 50%;
+  top: calc(46% + 128px);
+  width: min(420px, 100% - 48px);
+  transform: translateX(-50%);
+  text-align: center;
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1.25;
+  color: var(--mist);
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------------------------
+   Top bar
+   --------------------------------------------------------------------------- */
+.glass-bar {
+  position: absolute;
+  inset: 0 0 auto 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 60px;
+  padding: env(safe-area-inset-top) calc(20px + env(safe-area-inset-right)) 0
+    calc(24px + env(safe-area-inset-left));
+  background: var(--bg);
+}
+
+.stage .glass-bar {
+  min-height: 64px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  color: var(--paper);
+}
+
+.brand svg {
+  width: 28px;
+  height: 28px;
+  flex: none;
+}
+
+.stage .brand svg {
+  width: 32px;
+  height: 32px;
+}
+
+.brand h1,
+.brand p {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.brand span {
+  display: block;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.2;
+  color: var(--faint);
+}
+
+.bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: nowrap;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.figures {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  margin-right: 8px;
+}
+
+.figure {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.figure strong {
+  font-size: clamp(22px, 2vw, 28px);
+  font-weight: 600;
+  letter-spacing: -0.05em;
+  line-height: 0.9;
+  font-variant-numeric: tabular-nums;
+}
+
+.figure span {
+  font-size: 14px;
+  font-weight: 560;
+  color: var(--mist);
+}
+
+/* HeroUI Toolbar sits flat on the bar. */
+.bar-toolbar,
+.toolbar {
+  background: transparent;
+  padding: 0;
+  gap: 4px;
+  border-radius: 0;
+}
+
+/* Text button: ghost Button, 44px, pill. */
+.button--ghost,
+.toggle-button--ghost {
+  min-height: 44px;
+  height: 44px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--mist);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  &:hover,
+  &[data-hovered="true"] {
+    color: var(--paper);
+    background: color-mix(in srgb, var(--paper) 8%, transparent);
+  }
+}
+
+.toggle-button--ghost[data-selected="true"],
+.toggle-button--ghost[aria-pressed="true"] {
+  color: var(--paper);
+  background: transparent;
+}
+
+/* Primary button: the join button. */
+.button--primary {
+  min-height: 44px;
+  height: 44px;
+  padding: 0 20px;
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 560;
+  letter-spacing: -0.01em;
+  &:hover,
+  &[data-hovered="true"] {
+    background: var(--paper);
+    opacity: 0.88;
+  }
+  &:disabled,
+  &[aria-disabled="true"],
+  &[data-pending="true"] {
+    opacity: 0.55;
+  }
+}
+
+.status {
+  min-height: 44px;
+  gap: 8px;
+  padding: 0 10px;
+  background: transparent;
+  color: var(--mist);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.pip {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--live);
+}
+
+.pip.hot {
+  background: var(--thread);
+}
+
+.pip.quiet {
+  background: color-mix(in srgb, var(--paper) 72%, transparent);
+}
+
+.pip.error {
+  background: var(--danger);
+}
+
+.pip.preview {
+  background: var(--faint);
+}
+
+/* ---------------------------------------------------------------------------
+   Home chrome
+   --------------------------------------------------------------------------- */
+.float-copy {
+  position: absolute;
+  top: 72px;
+  left: 24px;
+  z-index: 1;
+  max-width: 680px;
+  padding-right: 24px;
+  pointer-events: none;
+}
+
+.float-copy h1 {
+  margin: 0;
+  font-size: clamp(28px, 3vw, 36px);
+  font-weight: 560;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+
+.float-copy p {
+  margin: 8px 0 0;
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 1.35;
+  color: var(--mist);
+}
+
+.person-jump {
+  position: absolute;
+  top: 68px;
+  right: 16px;
+  z-index: 2;
+  width: min(240px, 100% - 32px);
+}
+
+.person-jump .select__trigger {
+  min-height: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: var(--sheet);
+  font-size: 14px;
+}
+
+.person-jump .select__value[data-placeholder="true"] {
+  color: var(--mist);
+}
+
+.select__popover {
+  background: var(--sheet);
+  border-radius: 12px;
+}
+
+.select__popover [role="option"] {
+  min-height: 44px;
+  font-size: 14px;
+  color: var(--paper);
+}
+
+.float-action {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(20px + env(safe-area-inset-bottom));
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.float-action .button {
+  min-width: 200px;
+  pointer-events: auto;
+}
+
+.zoom-bar {
+  position: absolute;
+  left: 16px;
+  bottom: 18px;
+  z-index: 2;
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 12px;
+  background: var(--sheet);
+}
+
+.zoom-bar .button {
+  width: 44px;
+  min-width: 44px;
+  padding: 0;
+  border-radius: 50%;
+}
+
+.has-action .zoom-bar {
+  bottom: 84px;
+}
+
+.legend {
+  position: absolute;
+  left: 50%;
+  bottom: 22px;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 16px;
+  width: min(720px, 100% - 200px);
+  transform: translateX(-50%);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--faint);
+  pointer-events: none;
+}
+
+.has-action .legend {
+  bottom: 88px;
+}
+
+/* Keep the legend clear of the dossier. */
+.has-dossier .legend {
+  left: calc((100% - 336px) / 2);
+  width: max(240px, calc(100% - 336px - 320px));
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--core) 30%, var(--rim) 100%);
+}
+
+.thread-note {
+  position: absolute;
+  left: 50%;
+  bottom: 58px;
+  z-index: 2;
+  width: min(420px, 100% - 200px);
+  transform: translateX(-50%);
+  padding: 14px 16px 15px;
+  border-radius: 14px;
+  background: var(--sheet);
+  pointer-events: none;
+}
+
+.has-action .thread-note {
+  bottom: 98px;
+}
+
+.stage .thread-note {
+  width: min(560px, 100% - 200px);
+  bottom: 36px;
+}
+
+.thread-note strong {
+  display: block;
+  font-size: 15px;
+  font-weight: 560;
+}
+
+.thread-note p {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--mist);
+  line-height: 1.35;
+}
+
+.thread-note .score {
+  color: var(--paper);
+}
+
+.thread-note .score.hot {
+  color: var(--thread);
+}
+
+/* ---------------------------------------------------------------------------
+   Dossier
+   --------------------------------------------------------------------------- */
+.dossier {
+  position: absolute;
+  top: 72px;
+  right: 16px;
+  bottom: 16px;
+  z-index: 3;
+  width: min(320px, 100% - 32px);
+  padding: 0;
+  border-radius: 16px;
+  background: var(--sheet);
+  overflow: hidden;
+  animation: dossier-in 240ms var(--ease-sheet) both;
+}
+
+.stage .dossier {
+  top: 92px;
+  width: min(340px, 100% - 32px);
+}
+
+@keyframes dossier-in {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.dossier-scroll {
+  height: 100%;
+  padding: 20px 18px 18px;
+  overflow-y: auto;
+}
+
+.dossier-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 1;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--paper) 8%, transparent);
+  color: var(--paper);
+}
+
+.dossier h2 {
+  margin: 0;
+  padding-right: 44px;
+  font-size: 22px;
+  font-weight: 560;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.dossier .career {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: var(--mist);
+}
+
+.dossier .detail {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--paper);
+  line-height: 1.35;
+}
+
+.dossier .skills {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--mist);
+  line-height: 1.35;
+}
+
+.dossier .count {
+  margin: 18px 0 4px;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.dossier .match-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.match-row {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  height: auto;
+  padding: 10px 8px;
+  margin: 0;
+  border-radius: 10px;
+  text-align: left;
+  white-space: normal;
+  color: var(--paper);
+  background: transparent;
+  &:hover,
+  &[data-hovered="true"] {
+    background: transparent;
+    opacity: 0.8;
+    color: var(--paper);
+  }
+}
+
+.match-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 15px;
+  font-weight: 560;
+}
+
+.match-line .score {
+  font-variant-numeric: tabular-nums;
+  color: var(--paper);
+}
+
+.match-line .score.hot {
+  color: var(--thread);
+}
+
+.match-reason {
+  display: block;
+  margin-top: 2px;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--mist);
+  line-height: 1.35;
+}
+
+.match-rule {
+  background: color-mix(in srgb, var(--paper) 8%, transparent);
+}
+
+/* ---------------------------------------------------------------------------
+   Stage rail
+   --------------------------------------------------------------------------- */
+.stage-rail {
+  position: absolute;
+  top: 92px;
+  right: 16px;
+  bottom: 16px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: min(340px, 100% - 32px);
+  pointer-events: none;
+}
+
+.stage-rail > * {
+  pointer-events: auto;
+}
+
+.rail-section {
+  padding: 16px 16px 8px;
+  border-radius: 16px;
+  background: var(--sheet);
+}
+
+.rail-activity {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.rail-activity h2 {
+  margin: 0 0 8px;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.feed {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: 0 0 8px;
+  list-style: none;
+  overflow-y: auto;
+}
+
+.feed-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+}
+
+.feed-row + .feed-row {
+  margin-top: 4px;
+}
+
+.feed-row .pip {
+  margin-top: 6px;
+}
+
+.feed-row strong {
+  display: block;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.feed-row span {
+  display: block;
+  font-size: 14px;
+  color: var(--mist);
+}
+
+.feed-empty {
+  margin: 0;
+  padding: 4px 0 12px;
+  font-size: 14px;
+  color: var(--mist);
+}
+
+.stage-qr {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 16px;
+  background: var(--sheet);
+}
+
+.stage-qr .qr-tile {
+  flex: none;
+  padding: 0;
+  line-height: 0;
+  border-radius: 12px;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.stage-qr p {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+/* ---------------------------------------------------------------------------
+   Registration sheet
+   --------------------------------------------------------------------------- */
+.modal__backdrop--opaque {
+  background: rgba(0, 0, 0, 0.46);
+}
+
+.modal__backdrop {
+  align-items: flex-end;
+}
+
+.modal__container {
+  padding: 0;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.bt-sheet {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  max-height: min(92dvh, 820px);
+  margin: 0 auto;
+  padding: 8px 20px calc(28px + env(safe-area-inset-bottom));
+  overflow-y: auto;
+  border-radius: 20px 20px 0 0;
+  background: var(--sheet);
+  color: var(--paper);
+}
+
+.grabber {
+  width: 36px;
+  height: 5px;
+  margin: 0 auto 12px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--paper) 28%, transparent);
+}
+
+.sheet-head .sheet-heading {
+  margin: 0;
+  padding-right: 52px;
+  font-size: 22px;
+  font-weight: 560;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+
+.sheet-head p {
+  margin: 6px 0 0;
+  padding-right: 52px;
+  font-size: 15px;
+  color: var(--mist);
+  line-height: 1.35;
+}
+
+.bt-sheet .modal__close-trigger,
+.bt-sheet .close-button {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--paper) 8%, transparent);
+  color: var(--paper);
+}
+
+.sheet-form {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  margin-top: 20px;
+}
+
+.sheet-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 0 0 10px;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.sheet-label small {
+  font-size: 14px;
+  font-weight: 560;
+  color: var(--mist);
+  font-variant-numeric: tabular-nums;
+}
+
+.input,
+.bt-sheet input {
+  min-height: 48px;
+  height: 48px;
+  width: 100%;
+  border-radius: 14px;
+  background: var(--raised);
+  color: var(--paper);
+  font-size: 17px;
+  font-weight: 400;
+  padding: 0 14px;
+  border: 0;
+}
+
+.input::placeholder,
+.bt-sheet input::placeholder {
+  color: var(--faint);
+}
+
+.choice-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.choice-grid.two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.choice-toggle {
+  min-height: 44px;
+  height: auto;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: var(--raised);
+  color: var(--paper);
+  font-size: 15px;
+  font-weight: 560;
+  white-space: normal;
+  text-align: center;
+  &:hover,
+  &[data-hovered="true"] {
+    background: color-mix(in srgb, var(--raised) 70%, var(--paper) 30%);
+    color: var(--paper);
+  }
+  &[data-selected="true"],
+  &[aria-pressed="true"] {
+    background: var(--paper);
+    color: var(--ink);
+  }
+}
+
+.choice-grid.two .choice-toggle {
+  justify-content: center;
+  width: 100%;
+}
+
+.sheet-error {
+  background: var(--raised);
+  color: var(--danger);
+  border-radius: 14px;
+  padding: 12px 14px;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sheet-submit {
+  width: 100%;
+}
+
+.sheet-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 32px 0 12px;
+  text-align: center;
+}
+
+.sheet-success h2 {
+  margin: 12px 0 0;
+  font-size: 22px;
+  font-weight: 560;
+  letter-spacing: -0.03em;
+}
+
+.sheet-success p {
+  margin: 0;
+  font-size: 15px;
+  color: var(--mist);
+  line-height: 1.35;
+}
+
+.arrival-orb {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #0e171c 38%, #70b0cc 100%);
+  color: #f5f5f7;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+@media (min-width: 640px) {
+  .modal__backdrop {
+    align-items: center;
+  }
+  .modal__container {
+    justify-content: center;
+  }
+  .bt-sheet {
+    border-radius: 16px;
+    padding-top: 24px;
+  }
+  .grabber {
+    display: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Responsive
+   --------------------------------------------------------------------------- */
+@media (max-width: 900px) {
+  .has-action .legend {
+    display: none;
+  }
+}
+
+@media (max-width: 1100px) {
+  .figure.optional {
+    display: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .glass-bar .status,
+  .brand span {
+    display: none;
+  }
+
+  .float-copy h1 {
+    font-size: 28px;
+  }
+
+  .person-jump {
+    top: auto;
+    right: 16px;
+    left: 16px;
+    bottom: 76px;
+    width: auto;
+  }
+
+  .has-action .person-jump {
+    bottom: 140px;
+  }
+
+  .zoom-bar {
+    bottom: 18px;
+  }
+
+  .has-action .zoom-bar {
+    bottom: 84px;
+  }
+
+  .dossier,
+  .stage .dossier {
+    top: auto;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    width: auto;
+    max-height: 46%;
+  }
+
+  .stage-rail {
+    top: auto;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    width: auto;
+    max-height: 42%;
+  }
+
+  .thread-note,
+  .stage .thread-note {
+    width: calc(100% - 32px);
+  }
+
+  .stage .zoom-bar {
+    display: none;
+  }
+
+  .figures {
+    gap: 16px;
+  }
+
+  .stage .bar-actions .button span.label-long {
+    display: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Accessibility media queries
+   --------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .dossier,
+  .thread-note,
+  .bt-sheet,
+  .zoom-bar,
+  .person-jump .select__trigger,
+  .rail-section,
+  .stage-qr {
+    background: var(--sheet);
+  }
+}
+
+@media (prefers-contrast: more) {
+  .glass-bar,
+  .legend,
+  .person-jump .select__trigger,
+  .zoom-bar,
+  .dossier,
+  .thread-note,
+  .bt-sheet,
+  .rail-section,
+  .stage-qr {
+    border: 2px solid var(--paper);
+  }
+  .legend {
+    padding: 4px 12px;
+  }
 }
