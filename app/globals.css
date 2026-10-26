@@ -254,6 +254,7 @@ body {
 
 .brand h1,
 .brand p {
+  white-space: nowrap;
   margin: 0;
   font-size: 15px;
   font-weight: 500;
@@ -1063,6 +1064,16 @@ body {
 }
 
 @media (max-width: 720px) {
+  .glass-bar {
+    padding-left: calc(16px + env(safe-area-inset-left));
+    padding-right: calc(8px + env(safe-area-inset-right));
+  }
+
+  .glass-bar .button--ghost,
+  .glass-bar .toggle-button--ghost {
+    padding: 0 8px;
+  }
+
   .glass-bar .status,
   .brand span {
     display: none;

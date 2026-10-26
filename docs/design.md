@@ -4,7 +4,7 @@ A quiet room. Each person is a small light. A strong match is a thin thread. Not
 
 This file records the visual system for the Tec de Matamoros workshop app so it can be rebuilt without guessing. Every number below is the value in the code. Where the document and the code disagree, the code wins, and this file should be fixed.
 
-**Source of truth:** `app/globals.css` (all chrome), `components/network/NetworkGraph.tsx` (nodes, threads, forces), `components/brand/Mark.tsx`, and the four screens listed under [Screens](#screens).
+**Source of truth:** `app/globals.css` (all chrome), `components/network/NetworkGraph.tsx` (nodes, threads, forces), `components/brand/Mark.tsx`, and the two screens listed under [Screens](#screens).
 
 **Component library:** [HeroUI](https://heroui.com) v3 (`@heroui/react` and `@heroui/styles`). Buttons, toggles, chips, fields, cards, surfaces, toolbars, and sheets come from HeroUI. The graph, the mark, and the type are still drawn here. HeroUI is themed onto the tokens below, and its default blur, shadow, and press-scale are turned off in `app/globals.css`.
 
@@ -38,7 +38,7 @@ These were tried and rejected. Do not bring them back.
 - An offset highlight or specular spot. Light placed up and to the left is what makes a flat disc read as 3D.
 - A bright center. The glow lives at the rim and fades inward.
 - Neon rainbows, gold rings, pulsing, traveling beads on threads, and a continuous redraw just to animate.
-- A large aurora, a vignette, a dotted grid, and a lamp in the corner of the host screen.
+- A large aurora, a vignette, a dotted grid, and a lamp in a corner.
 - Frosted glass pills, inset highlights, drop shadows, and display type above 40px.
 
 ## Tokens
@@ -49,7 +49,7 @@ Defined on `:root` in `app/globals.css`. The light scheme (`prefers-color-scheme
 | --- | --- | --- | --- |
 | `--bg` | `#07070c` | `#e4e4ea` | Page background, top bar |
 | `--field` | `#07070c` | `#e4e4ea` | Graph field |
-| `--sheet` | `#1c1c1e` | `#f7f7f8` | Dossier, sheet, zoom cluster, person jump, stage rail, host cards |
+| `--sheet` | `#1c1c1e` | `#f7f7f8` | Dossier, sheet, zoom cluster, person jump, stage rail |
 | `--raised` | `#2c2c2e` | `#e1e1e6` | Inputs and unselected choices |
 | `--paper` | `#f5f5f7` | `#1c1c1e` | Primary text, join button fill, focus ring |
 | `--ink` | `#1c1c1e` | `#f5f5f7` | Text on the join button and selected choice |
@@ -57,7 +57,7 @@ Defined on `:root` in `app/globals.css`. The light scheme (`prefers-color-scheme
 | `--faint` | `#98989d` | `#5c5c61` | Tertiary text, placeholders, legend |
 | `--thread` | `#e4d7bc` | `#6d5a32` | A hot score in text, the hot activity pip |
 | `--live` | `#6f9a78` | `#2f6b42` | Status pip. No glow |
-| `--danger` | `#ff6961` | `#c41a16` | Destructive text and the error pip. Never a filled button |
+| `--danger` | `#ff6961` | `#c41a16` | Error text and the error pip. Never a filled button |
 | `--glass`, `--glass-strong` | `#101012`, `#161618` | `#f4f4f6`, `#ffffff` | Declared, but solid. No surface uses blur |
 | `--line`, `--glass-stroke`, `--glass-highlight`, `--vignette` | `transparent` | `transparent` | Kept at transparent on purpose |
 | `--dot` | `rgba(255,255,255,0.35)` | `rgba(0,0,0,0.22)` | Declared, unused. The dot grid is off |
@@ -81,8 +81,6 @@ System stack only: `-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI"
 | Sheet labels, legends | 17px | 600 | none | none |
 | Field text | 17px | 400 | none | none |
 | Choice | 15px | 560 | none | none |
-| Host title | `clamp(32px, 4vw, 40px)` | 560 | -0.035em | 0.95 |
-| Figure number | `clamp(32px, 4vw, 44px)` | 600, tabular | -0.05em | 0.9 |
 | Stage figure number | `clamp(22px, 2vw, 28px)` | 600, tabular | -0.05em | 0.9 |
 | Figure label | 14px | 560, in `--mist` | none | none |
 | Legend | 13px | 500, in `--faint` | none | none |
@@ -165,6 +163,8 @@ Painted in `paintLink`. A quadratic curve whose control point is offset by `±0.
 
 With increased contrast the strong thread is `rgba(255,255,255,0.92)` and the weak one is `rgba(255,255,255,0.38)`. Widths are divided by the zoom so threads stay hairlines on screen.
 
+**Light scheme threads.** White strokes vanish on `#e4e4ea`, so in the light scheme the same three states use `rgba(28,28,30,a)` with a 0.72 / 0.16 / 0.06 alpha (0.92 / 0.38 with increased contrast). The focus ring around a node is `rgba(28,28,30,0.55)`. "Strong" for geometry and forces means a score of 8 or more (`STRONG_MATCH_SCORE`); the bright stroke needs 16 or more. The stage figure "Hilos fuertes" counts scores of 8 or more.
+
 Threads are called **hilos** in copy. "Ámbar" is retired. Constants: `STRONG_MATCH_SCORE = 8`, `FILAMENT_SCORE = 16`. `threadsToDraw` keeps every link of 16 or more, plus each person's two best links, so the room never turns into a hairball. Selecting a person adds every thread that touches them, even the ones the quiet room had hidden. The reason is never painted on the curve. Hovering a thread, or tapping it, opens `.thread-note`: the two names, the score, and `reason`. The note sits above the legend. On the projector it takes the caption's place until the pointer leaves, unless the thread was tapped, in which case it stays until the background is clicked. The hovered or pinned thread uses the strong stroke. The hit area is the same curve, 16px wide on screen.
 
 ## The room
@@ -207,10 +207,8 @@ Chrome is HeroUI v3, not a second set of hand-built controls. Import from `@hero
 | Dossier row divider | `Separator` | `.match-rule`, `--paper` at 8% |
 | Person jump | `Select` `variant="secondary"` + `ListBox` | `.person-jump`. The value is always empty, so choosing a name only opens that person. Trigger 44px, radius 10, `--sheet`. Popover is `--sheet`, radius 12, no shadow, rows 44px |
 | Zoom cluster | `Button` `variant="ghost"` `isIconOnly` | Three 44px buttons |
-| Host cards | `Card` | Padding 22, radius 16, title 22px |
-| Name and passcode | `TextField` + `Input` + `Label` | 48px, radius 14, fill `--raised` |
+| Name | `TextField` + `Input` + `Label` | 48px, radius 14, fill `--raised` |
 | Registration and confirm | `Modal` | Opaque backdrop `rgba(0,0,0,0.46)`. `placement="auto"` is a bottom sheet, centered from 640px. Close is `CloseButton` |
-| Errors and host result | `Alert` | Flat, `--raised` or the danger text. Never a filled danger button |
 | Pending submit | `Button` `isPending` + `Spinner` | |
 
 The measurements below still apply. Class names are the layout hooks; the control itself is the HeroUI component in the table above. Zoom is an icon-only `Button`. The thread note is a HeroUI `Surface` like the dossier and the caption. The person jump is a HeroUI `Select`, and the dossier's match rows are HeroUI ghost `Button`s.
@@ -220,13 +218,12 @@ The measurements below still apply. Class names are the layout hooks; the contro
 | Component | Class | Spec |
 | --- | --- | --- |
 | Top bar | `.glass-bar` | Absolute, full width, 60px min height (64px on stage), no radius, background `--bg`, padding `0 20px 0 24px` plus safe areas |
-| Brand | `.brand` | 10px gap. Mark is 28px on home, 32px on stage, 40px on host |
+| Brand | `.brand` | 10px gap. Mark is 28px on home, 32px on stage |
 | Text button | `.button--ghost` | 44px tall, `0 12px` padding, pill, transparent, `--mist`. Hover is `--paper` text on `--paper` at 8% |
 | Status | `.chip.status` | 44px tall, 8px gap, `0 10px` padding, `--mist` |
 | Pip | `.pip` | 8px circle in `--live`. `.hot` is `--thread`. `.quiet` is `--paper` at 0.72. Error is `--danger`. Preview is `--faint` |
 | Join button | `.button--primary` | 44px, pill, `--paper` fill, `--ink` text, 560. Hover is opacity 0.88. Disabled is 0.55. No scale, no shadow |
 | Floating action | `.float-action .button` | Min width 200px. Centered, 20px above the bottom |
-| Danger button | `.danger-text` | 44px, transparent, `--danger` text. Confirm only. Cancel is the primary button |
 | Zoom cluster | `.zoom-bar` | Bottom left, 16px in, 18px up, `--sheet`, radius 12, 2px padding and gap. Buttons are 44px circles |
 | Person jump | `.person-jump` | HeroUI `Select`. Trigger 44px tall, radius 10, `--sheet`, 14px text, placeholder in `--mist`. Top right 68px down, 240px wide max |
 | Legend | `.legend` | Plain text, no container, centered, 22px from the bottom, 16px gap. Hidden on the stage |
@@ -239,7 +236,6 @@ The measurements below still apply. Class names are the layout hooks; the contro
 | Field | `.input` | 48px tall, radius 14, `--raised`, 17px |
 | Choice | `.choice-toggle` | 44px min, pill, `--raised`, 15px, 560. Hover mixes 30% `--paper`. Selected is `--paper` with `--ink` text |
 | Icon button | `.icon-btn` | 44px circle, `--paper` at 8%. Used by `CloseButton` |
-| Host card | `.host-card` | 28px top margin, padding 22, radius 16, `--sheet` |
 | Stage rail | `.stage-rail` | Right 16px, 340px wide max, starts about 92px below the top, 12px gap. Sections are `--sheet`, radius 16, padding `16px 16px 8px` |
 | Stage QR | `.stage-qr` | Radius 16, padding 12, 12px gap. The code is 108px on a white 12px-radius tile, `#ffffff` on `#16140f` |
 | Feed row | `.feed-row` | 4px between rows, `py-2.5`, 12px gap |
@@ -251,8 +247,6 @@ Score numbers in the dossier are `--paper`, or `--thread` when the score is 16 o
 **Home** (`app/page.tsx`). Graph full bleed. Top bar: brand on the left, then the status, "Proyector", and "Compartir". Below it, the title and lede at top left, 72px down and 24px in, 680px max. The person jump sits at the top right while nobody is selected. The join button is bottom center ("Unirme a la red", or "Ver a {first name}" once you are in and have a match). The zoom cluster and legend rise 66px when the button is showing. The dossier opens on the right when a node is selected. Under the name it shows the career in `--mist` at 14px, the interests joined with ` · ` at 14px, and the skills joined the same way at 13px in `--mist`. It does not show a goal. Then it lists every match with its score and reason. Hover or tap a thread to read the same reason in the thread note.
 
 **Stage** (`app/stage/page.tsx`). Graph full bleed with first names always shown. Top bar: brand, the figures Personas, Hilos fuertes, and Carreras (the third is hidden below 1100px, so the HeroUI bar controls stay on one line), then the status, "Mudo" or "Sonido", "Actividad", and "Pantalla" or "Ventana". The status, toggles, and screen control are a HeroUI `Toolbar`. The right rail holds the activity feed and the QR with the text "Escanea y entra", and it hides while a person is selected. Selecting a node opens the same dossier as home, on the right, listing every match with its score and reason. The camera eases onto that person. While a thread is hovered or pinned, the thread note still sits at the bottom. The legend is hidden.
-
-**Host** (`app/host/page.tsx`). Centered column 720px wide. Mark, "Taller", a pip and "Tec de Matamoros · {status}", and a join-button link "Abrir proyector". Before login: one card with "Código de anfitrión", a password field, and "Entrar". After login: figures (Personas, Coincidencias, Carreras), a "Enlaces" card, and a "Vaciar la red" card with a text-only danger action. The confirmation is a centered sheet titled "¿Vaciar la red?" with "Sí, vaciar" as text and "Cancelar" as the join button.
 
 **Registration** (`components/registration/RegistrationModal.tsx`). A sheet for the school workshop: grabber, "Únete a la red", "Nombre, carrera, lo que sabes y lo que te gusta. Sin correo.", and a close button. The form is a name field, then Carrera, Habilidades, and Intereses. "Qué buscas hoy" is retired. There is no agreement checkbox. Joining still sends `consent: true`, because the register schema requires it. Escape and backdrop click close it, and the name field takes focus. On success the sheet shows the arrival orb with the person's initials, "Ya estás en el salón", and "Tu luz aparece en el proyector y busca coincidencias." It closes after 1.2 seconds. Confetti uses `#f7f4ee`, `#cfc3a2`, `#ffffff`, 40 particles, and is skipped with reduced motion.
 
@@ -309,7 +303,7 @@ A match reason is shared interests and complementary skills, plus the same caree
 - Contrast: initials are light on a near-black core. Body text is `--paper` or `--mist` on a dark surface. Small text should stay near 4.5:1.
 - Reduced motion: transitions and animations are cut to 0.01ms, so the dossier appears in place. The graph does not animate on its own, and the camera move and the fit are 0.
 - Reduced transparency: dossier, caption, thread note, sheet, zoom cluster, and person jump stay on solid `--sheet`. The top bar is already solid.
-- Increased contrast: 2px `--paper` borders on bar, legend, person jump, zoom, dossier, caption, thread note, sheet, host cards, rail sections, and the QR card. The rim and strong threads become more opaque and the halo tightens.
+- Increased contrast: 2px `--paper` borders on bar, legend, person jump, zoom, dossier, caption, thread note, sheet, rail sections, and the QR card. The rim and strong threads become more opaque and the halo tightens.
 - Color is never alone. A strong match is a lighter, thicker line and a number in the dossier. Discipline is a rim hue plus the name.
 - The graph has a screen-reader summary: "{n} personas. {m} hilos dibujados. {k} hilos de 16 puntos o más."
 
@@ -351,7 +345,7 @@ To reproduce this design, in order:
 3. Paint nodes with the seven steps in [The node](#the-node). Check that no gradient is offset and no stop is white.
 4. Draw threads with the three states in [Threads](#threads).
 5. Apply the room forces and fit padding from [The room](#the-room).
-6. Lay out the four screens from [Screens](#screens) and the breakpoints from [Responsive](#responsive).
+6. Lay out the two screens from [Screens](#screens) and the breakpoints from [Responsive](#responsive).
 7. Use the strings in [Copy](#copy).
 8. Compare against a screenshot at 1024 by 768 and at 390 wide, in dark and light, with and without `?demo=1`.
 
